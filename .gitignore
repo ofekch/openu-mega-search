@@ -35,5 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/course-files/*.zip
-/course-files/extracted/*
+extractor/course-files/*.zip
+extractor/course-files/extracted/*
