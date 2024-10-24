@@ -17,7 +17,7 @@ const ResultItem = ({ filePath }) => {
 
 export default function Content({ indices }) {
     const [selectedIndex, setSelectedIndex] = useState("");
-    const [searchResults, setSearchResults] = useState(null);
+    const [searchResults, setSearchResults] = useState<null | any[]>(null);
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 

@@ -3,7 +3,7 @@ import { Client } from '@elastic/elasticsearch';
 const HOST = process.env.ELASTICSEARCH_HOST || 'localhost';
 const PORT = process.env.ELASTICSEARCH_PORT || '9200';
 const USER_NAME = process.env.ELASTICSEARCH_USERNAME || 'elastic'
-const PASSWORD = process.env.ELASTICSEARCH_PASSWORD
+const PASSWORD = process.env.ELASTICSEARCH_PASSWORD || 'changeme'
 const client = new Client({
   node: `https://${HOST}:${PORT}`, auth: {
     username: USER_NAME,
