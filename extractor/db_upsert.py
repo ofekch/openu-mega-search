@@ -74,13 +74,21 @@ async def create_index(index_name):
     else:
         print(f"Index '{index_name}' already exists.")
 
+async def upsert_doc_with_retry(index_name, doc_id, doc, retries=3):
+    try:
+        await es.update(index=index_name, id=doc_id, body={
+            "doc": doc, "doc_as_upsert": True})
+    except Exception as e:
+        if retries > 0:
+            await upsert_doc_with_retry(index_name, doc_id, doc, retries-1)
+        else:
+            raise e
 
 async def upsert_file_to_elasticsearch(course_id, file_path):
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             data = json.load(f)
-            await es.update(index=course_id, id=data["hash"], body={
-                "doc":data, "doc_as_upsert": True})
+            await upsert_doc_with_retry(course_id, data["hash"], data)
     except Exception as e:
         print(f"Failed to upsert file {file_path}", e)
 
