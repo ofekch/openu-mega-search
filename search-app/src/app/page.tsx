@@ -1,6 +1,8 @@
 import { getIndices } from '../lib/db';
 import Content from './content';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const indices = await getIndices();
     return (
