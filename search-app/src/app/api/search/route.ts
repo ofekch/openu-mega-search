@@ -1,4 +1,4 @@
-import { search } from "@/lib/db";
+import { logSearchResult, search } from "@/lib/db";
 
  
 export async function GET(
@@ -21,6 +21,7 @@ export async function GET(
     index,
     searchQuery
   });
+  logSearchResult(index, searchQuery, results.length);
   return new Response(JSON.stringify(results), {
     status: 200,
   });

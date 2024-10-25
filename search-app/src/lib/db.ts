@@ -1,5 +1,6 @@
 import { Client } from '@elastic/elasticsearch';
 
+const SEARCH_LOGS_INDEX = 'search_logs';
 const HOST = process.env.ELASTICSEARCH_HOST || 'localhost';
 const PORT = process.env.ELASTICSEARCH_PORT || '9200';
 const USER_NAME = process.env.ELASTICSEARCH_USERNAME || 'elastic'
@@ -35,14 +36,24 @@ const getIndexMetaData = async ({ index, ...moreDetails }) => {
         lastUpdated: result?.hits?.hits[0]?._source['timestamp'],
     };
 }
+
+const getAvailableIndices = async () => {
+  let { body: indices} = await client.cat.indices({ format: 'json' });
+  indices = indices.filter(({ index }) => !index.startsWith('.') && index !== SEARCH_LOGS_INDEX);
+  return indices;
+}
+
 export const getIndices = async () => {
-    let { body: indices} = await client.cat.indices({ format: 'json' });
-    indices = indices.filter(({ index }) => !index.startsWith('.'));
-    const result = await Promise.all(indices.map(getIndexMetaData));
+    const availableIndices = await getAvailableIndices();
+    const result = await Promise.all(availableIndices.map(getIndexMetaData));
     return result
 }
 
 export const search = async (index: string, query: string) => {
+    const availableIndices = await getAvailableIndices();
+    if (!availableIndices.find(({ index: idx }) => idx === index)) {
+        throw new Error('Index not searchable');
+    }
     const { body: result } = await client.search({
         index,
         body: {
@@ -67,4 +78,16 @@ export const search = async (index: string, query: string) => {
       }
     });
     return result?.hits?.hits.map((hit) => hit._source);
+}
+
+export const logSearchResult = async (index: string, query: string, resultsCount: number) => {
+    await client.index({
+        index: SEARCH_LOGS_INDEX,
+        body: {
+            indexName: index,
+            searchQuery: query,
+            results: resultsCount,
+            timestamp: new Date().toISOString(),
+        },
+    });
 }
